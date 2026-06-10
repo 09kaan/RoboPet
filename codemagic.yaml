@@ -2,6 +2,8 @@ workflows:
   ios-testflight:
     name: iOS TestFlight Build
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: AppStoreKey
     environment:
       flutter: stable
       xcode: latest
