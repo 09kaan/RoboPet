@@ -3,7 +3,7 @@ workflows:
     name: iOS TestFlight Build
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: AppStoreKey
+      app_store_connect: "Codemagic Key"
     environment:
       flutter: stable
       xcode: latest
