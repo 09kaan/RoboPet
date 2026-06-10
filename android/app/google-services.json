@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "198832235665",
+    "project_id": "my-robo-dog",
+    "storage_bucket": "my-robo-dog.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198832235665:android:00edefa734037ba65ecb30",
+        "android_client_info": {
+          "package_name": "com.example.robopet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwJw5yfnki7EYQpTmNgf9cKow6laAwrVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

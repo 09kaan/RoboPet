@@ -1,0 +1,80 @@
+Room Backgrounds — Wiring into the 
+Game (Cursor)
+RoboPet · Visual Pass · Drop the three PixelLab rooms in as backdrops behind the wandering dog.
+1. Which file is which
+ Couch + holographic TV + lamp + plant -> Living Room -> living_room.png
+ Monitors + beakers on shelves -> Laboratory -> laboratory.png
+ 3D-printer + amber robotic arms -> Fabricator -> fabricator.png
+2. Place assets and declare them
+Put the PNGs in assets/images/rooms/:
+assets/images/rooms/living_room.png  laboratory.png  fabricator.png
+Add the folder to pubspec (keep your dog folders too), then run flutter pub get:
+flutter:
+  assets:
+    - assets/images/rooms/
+3. lib/game/rooms/living_room.dart (updated)
+Replace the dark background rectangle with the room sprite, and remove the old floor line (the art 
+has its own floor):
+import 'package:flame/components.dart';
+import 'package:flame/game.dart';
+ 
+import '../components/robot_dog.dart';
+ 
+class LivingRoomWorld extends World {
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+ 
+    // Room backdrop: fills the same 400 x 700 box as the old dark rectangle.
+    add(SpriteComponent(
+      sprite: await Sprite.load('rooms/living_room.png'),
+      size: Vector2(400, 700),
+      position: Vector2(-200, -350),
+      priority: -10,
+    ));
+ 
+    // Robot dog standing on the painted floor.
+    // Nudge the y value until the feet sit on the floor (try 140 to 160).
+    add(RobotDog(position: Vector2(0, 150)));
+  }
+}
+4. Seat the dog on the painted floor
+The room art puts the floor in the lower third, so the dog needs to move down from its old spot. 
+Start at y = 150 and nudge until the feet rest on the floor (try 140 to 160). The dog still wanders left 
+and right on that same line.
+5. Apply to Laboratory and Fabricator
+Do the exact same swap in your Laboratory and Fabricator worlds, loading rooms/laboratory.png and 
+rooms/fabricator.png. Their floors sit a little lower, so try a dog y around 170 to 200 and tune.
+6. Optional - per-room wander range
+If the dog walks past the edges of the painted floor, limit how far it roams. Make _wanderRange a 
+constructor value in robot_dog.dart:
+// 1) Change the field from a const into a final set by the constructor:
+//    DELETE: static const double _wanderRange = 130.0;
+//    ADD:    final double _wanderRange;
+ 
+// 2) Update the constructor to accept it:
+RobotDog({required Vector2 position, double wanderRange = 130})
+    : _wanderRange = wanderRange,
+      super(
+        position: position,
+        size: Vector2.all(80),
+        anchor: Anchor.bottomCenter,
+        priority: 10,
+      );
+ 
+// Then each room can pass: RobotDog(position: ..., wanderRange: 110)
+Then pass RobotDog(position: Vector2(0, 150), wanderRange: 110) per room.
+7. Cursor task
+Paste this to Cursor and attach this PDF:
+Add room backgrounds to my Flutter + Flame game.
+1. I added assets/images/rooms/living_room.png, laboratory.png, fabricator.png. 
+Register assets/images/rooms/ in pubspec.yaml and run flutter pub get.
+2. In lib/game/rooms/living_room.dart, replace the dark background RectangleComponent 
+with a SpriteComponent that loads rooms/living_room.png, size Vector2(400, 700), 
+position Vector2(-200, -350), priority -10 so it sits behind the dog. Remove the old 
+floor line RectangleComponent.
+3. Move the RobotDog down so it stands on the painted floor (start position Vector2(0, 
+150); I will fine-tune).
+4. Apply the same backdrop pattern to my Laboratory and Fabricator worlds using 
+rooms/laboratory.png and rooms/fabricator.png, with the dog y around 170 to 200.
+5. Hot-restart so the new assets load.

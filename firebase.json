@@ -1,0 +1,42 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "my-robo-dog",
+          "appId": "1:198832235665:android:00edefa734037ba65ecb30",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "my-robo-dog",
+          "configurations": {
+            "android": "1:198832235665:android:00edefa734037ba65ecb30",
+            "ios": "1:198832235665:ios:463892dc11ed97c85ecb30",
+            "macos": "1:198832235665:ios:463892dc11ed97c85ecb30",
+            "web": "1:198832235665:web:8ed2d1339122fe4d5ecb30",
+            "windows": "1:198832235665:web:0ffdda2e794a35475ecb30"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}

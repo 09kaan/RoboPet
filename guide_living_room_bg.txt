@@ -1,0 +1,83 @@
+RoboPet - Living Room Background 
+Wiring
+Cursor task - paste this in and run it
+Wire the new full-room pixel-art image in as the Living Room background, replacing the old wall 
+sprite and the code-drawn SimpleFloor. Keep the dog on the lower floor and keep the pixels 
+crisp.
+1. Add the image as assets/images/rooms/living_room_bg.png. Confirm assets/images/rooms/ 
+is listed under flutter: assets: in pubspec.yaml.
+2. In LivingRoomWorld.onLoad, remove the wall SpriteComponent that loads 
+rooms/living_wall.png and remove the SimpleFloor instance.
+3. Add the full-room background SpriteComponent from Section 2 (crisp-pixel paint, priority 
+-10).
+4. Set the dog start position to the lower floor and tune wander so it stays on the floor band 
+(Section 4).
+5. Run flutter pub get, hot restart, then verify every item in the Acceptance Test.
+Acceptance test
+ [ ] App opens to the Living Room and the new cyberpunk image fills the whole room (wall 
+and floor in one image).
+ [ ] The old flat SimpleFloor and any placeholder boxes are gone.
+ [ ] The dog stands on the lower floor platform and wanders without walking up into the wall 
+area.
+ [ ] Background pixels are crisp (no blur) when scaled to the screen.
+ [ ] The HUD (stat bars and currency) still renders on top and is unaffected.
+ [ ] With kDecorEnabled = false, no Decorate button and no decor sprites appear.
+1. Asset prep
+ Save the image you generated as assets/images/rooms/living_room_bg.png.
+ Open pubspec.yaml and confirm the rooms folder is registered:
+flutter:
+  assets:
+    - assets/images/rooms/
+ If it is already there from the earlier room work, no change is needed.
+2. Replace the Living Room background
+This is a single full-room image (wall plus floor baked in, no furniture), so it replaces both the old 
+wall sprite and the SimpleFloor.
+// At the top of the file, make sure Paint and FilterQuality are available.
+import 'package:flutter/material.dart';
+import 'package:flame/components.dart';
+// Inside LivingRoomWorld.onLoad():
+// 1) DELETE the old wall sprite line that loaded 'rooms/living_wall.png'.
+// 2) DELETE the old SimpleFloor(...) line.
+// 3) ADD the full-room background below.
+// Room bounds (portrait, matches the source image ratio 768 x 1364).
+final Vector2 kRoomTopLeft = Vector2(-200, -350);
+final Vector2 kRoomSize = Vector2(400, 710);
+final background = SpriteComponent(
+  sprite: await Sprite.load('rooms/living_room_bg.png'),
+  position: kRoomTopLeft,
+  size: kRoomSize,
+  anchor: Anchor.topLeft,
+  priority: -10,
+);
+// Keep pixel art crisp when scaled up (nearest neighbor, no smoothing).
+background.paint = Paint()
+  ..filterQuality = FilterQuality.none
+  ..isAntiAlias = false;
+add(background);
+3. Crisp pixels
+The filterQuality = FilterQuality.none and isAntiAlias = false on the background paint stop Flutter 
+from blurring the image when it scales the small pixel art up to screen size. Keep them on, 
+otherwise the wall and floor will look soft and clash with the crisp dog sprite.
+4. Dog placement and wander tuning
+Put the dog on the lower floor platform, and keep its wander targets on the floor band so it 
+never walks up into the wall.
+// Place the dog on the lower floor platform.
+add(RobotDog(Vector2(0, 250)));
+If the dog drifts up onto the wall while wandering, clamp the chosen target inside RobotDog to 
+the floor band:
+// Walkable floor band in world coordinates.
+const double kFloorMinY = 180; // top edge of the walkable floor
+const double kFloorMaxY = 320; // bottom edge of the walkable floor
+// When you pick a new wander target, clamp its Y:
+target.y = target.y.clamp(kFloorMinY, kFloorMaxY);
+Tune kFloorMinY / kFloorMaxY and the dog start Y until it sits naturally on the circular platform.
+5. Notes
+ Aspect ratio: source is about 768 x 1364 (ratio 1.776). kRoomSize 400 x 710 keeps it 
+undistorted. If your camera frames the world differently, adjust kRoomSize and 
+kRoomTopLeft together so the floor stays at the bottom.
+ Decor: the room is empty, so a static background works now. You can re-enable interactive 
+decor later by placing transparent decor sprites on top of this background.
+ Other rooms: use the exact same pattern for Fabricator and Laboratory later, each with its 
+own background image.
+ PixelLab: save PixelLab credits for the dog sprite and animation frames (small, transparent), 
+not for this large portrait background.
