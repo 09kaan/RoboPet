@@ -20,7 +20,27 @@ workflows:
           flutter packages pub get
       - name: Build Flutter iOS app
         script: |
-          flutter build ipa --release --export-method=app-store
+          flutter build ios --release --no-codesign
+          
+          cat <<EOF > custom_export_options.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>manageAppVersionAndBuildNumber</key>
+              <true/>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          
+          xcodebuild archive -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -archivePath build/ios/xcarchive/Runner.xcarchive CODE_SIGN_STYLE=Manual COMPILER_INDEX_STORE_ENABLE=NO
+          xcodebuild -exportArchive -archivePath build/ios/xcarchive/Runner.xcarchive -exportPath build/ios/ipa -exportOptionsPlist custom_export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
