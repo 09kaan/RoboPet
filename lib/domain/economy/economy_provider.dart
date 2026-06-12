@@ -8,6 +8,7 @@ import '../../data/models/module_instance.dart';
 import '../../data/models/player_profile.dart';
 import '../../data/models/robot_instance.dart';
 import '../../data/sync/economy_sync_service.dart';
+import '../../domain/decor/decor_def.dart';
 
 final economyProvider = Provider<EconomyService>((ref) {
   return EconomyService(
