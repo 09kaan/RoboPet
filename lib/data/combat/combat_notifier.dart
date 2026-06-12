@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../app/providers.dart';
 import '../../domain/combat/resolved_stats.dart';
 import '../models/game_item.dart';
 import '../models/robot_instance.dart';
