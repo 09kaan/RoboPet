@@ -12,6 +12,7 @@ final economyProvider = Provider<EconomyService>((ref) {
   return EconomyService(
     isar: ref.watch(isarProvider),
     sessionUid: ref.watch(sessionProvider).valueOrNull?.uid,
+    syncService: ref.watch(economySyncProvider),
   );
 });
 
@@ -33,8 +34,9 @@ const kCrateWeights = <KeyTier, Map<Rarity, int>>{
 class EconomyService {
   final Isar isar;
   final String? sessionUid;
+  final EconomySyncService syncService;
 
-  EconomyService({required this.isar, required this.sessionUid});
+  EconomyService({required this.isar, required this.sessionUid, required this.syncService});
 
   Future<void> grantStarterPack() async {
     if (sessionUid == null) return;
@@ -42,7 +44,6 @@ class EconomyService {
       final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
       if (profile == null || profile.starterGranted) return;
 
-      profile.currencies.scrap += 60;
       profile.currencies.basicKeys += 1;
       profile.starterGranted = true;
       await isar.playerProfiles.put(profile);
@@ -51,17 +52,14 @@ class EconomyService {
       final starterItem = catalogById('core_kinetic_basic');
       await _grantItemInternal(starterItem);
     });
+    
+    // Sync scrap via Firestore so it doesn't get overwritten
+    await syncService.grantScrap(60);
   }
 
   Future<void> addScrap(int amount) async {
     if (sessionUid == null || amount <= 0) return;
-    await isar.writeTxn(() async {
-      final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
-      if (profile != null) {
-        profile.currencies.scrap += amount;
-        await isar.playerProfiles.put(profile);
-      }
-    });
+    await syncService.grantScrap(amount);
   }
 
   Future<bool> buyKeyWithScrap(KeyTier tier) async {
@@ -69,12 +67,12 @@ class EconomyService {
     final price = kKeyPriceScrap[tier];
     if (price == null) return false;
 
-    return await isar.writeTxn(() async {
+    final success = await isar.writeTxn(() async {
       final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
       if (profile == null || profile.currencies.scrap < price) return false;
 
       profile.currencies.scrap -= price;
-      
+
       switch (tier) {
         case KeyTier.basic:
           profile.currencies.basicKeys += 1;
@@ -90,6 +88,12 @@ class EconomyService {
       await isar.playerProfiles.put(profile);
       return true;
     });
+
+    if (success) {
+      // Sync the spent scrap to Firestore to prevent it from coming back
+      await syncService.spend(currency: CurrencyType.scrap, amount: price, reason: 'buy_key');
+    }
+    return success;
   }
 
   Future<GameItem?> openCrate(KeyTier tier) async {
