@@ -161,6 +161,7 @@ class EconomyService {
         ..rarity = item.rarity
         ..acquiredAt = DateTime.now().toUtc();
       await isar.moduleInstances.put(instance);
+      syncService.syncModuleToCloud(instance); // fire and forget
     } else if (item.kind == ItemKind.consumable) {
       final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
       if (profile != null) {

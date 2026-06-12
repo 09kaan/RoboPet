@@ -150,6 +150,17 @@ class EconomySyncService {
       }
     });
   }
+
+  Future<void> syncModuleToCloud(ModuleInstance module) async {
+    final uid = _uid;
+    if (uid == null) return;
+    final docId = module.instanceId;
+    await _db.collection('users').doc(uid).collection('modules').doc(docId).set({
+      'defId': module.defId,
+      'level': module.level,
+      'isEquipped': module.isEquipped,
+    }, SetOptions(merge: true));
+  }
  
   Future<void> saveCombatLevel(int level) async {
     // Local optimistic
