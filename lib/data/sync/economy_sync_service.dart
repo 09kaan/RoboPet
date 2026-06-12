@@ -158,7 +158,7 @@ class EconomySyncService {
     await _db.collection('users').doc(uid).collection('modules').doc(docId).set({
       'defId': module.defId,
       'level': module.level,
-      'isEquipped': module.isEquipped,
+      if (module.equippedRobotId != null) 'equippedRobotId': module.equippedRobotId,
     }, SetOptions(merge: true));
   }
  
