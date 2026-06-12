@@ -113,6 +113,68 @@ class EconomySyncService {
       debugPrint('Failed to grant scrap: $e');
     }
   }
+
+  Future<void> grantKey({required CurrencyType keyType, required int amount}) async {
+    final keyName = keyType.name;
+    await _isar.writeTxn(() async {
+      var profile = await _isar.playerProfiles.filter().playerIdEqualTo(_uid).findFirst();
+      if (profile != null) {
+        if (keyType == CurrencyType.basicKeys) profile.currencies.basicKeys += amount;
+        else if (keyType == CurrencyType.rareKeys) profile.currencies.rareKeys += amount;
+        else if (keyType == CurrencyType.epicKeys) profile.currencies.epicKeys += amount;
+        profile.economyVersion += 1;
+        await _isar.playerProfiles.put(profile);
+      }
+    });
+
+    try {
+      await _db.runTransaction((tx) async {
+        tx.update(_profileRef, {
+          'currencies.$keyName': FieldValue.increment(amount),
+          'economyVersion': FieldValue.increment(1),
+        });
+      });
+    } catch (e) {
+      debugPrint('Failed to grant key: $e');
+    }
+  }
+
+  Future<bool> buyKeyWithScrap(CurrencyType keyType, int scrapCost) async {
+    final ok = await _db.runTransaction((tx) async {
+      final snap = await tx.get(_profileRef);
+      if (!snap.exists) return false;
+      final data = snap.data()!;
+      final balances = Map<String, dynamic>.from(data['currencies'] as Map? ?? {});
+      
+      final currentScrap = (balances['scrap'] as num?)?.toInt() ?? 0;
+      if (currentScrap < scrapCost) return false;
+      
+      balances['scrap'] = currentScrap - scrapCost;
+      final currentKeys = (balances[keyType.name] as num?)?.toInt() ?? 0;
+      balances[keyType.name] = currentKeys + 1;
+      
+      data['currencies'] = balances;
+      data['economyVersion'] = ((data['economyVersion'] as num?)?.toInt() ?? 0) + 1;
+      
+      tx.set(_profileRef, data, SetOptions(merge: true));
+      return true;
+    });
+    
+    if (ok) {
+      await _isar.writeTxn(() async {
+        var profile = await _isar.playerProfiles.filter().playerIdEqualTo(_uid).findFirst();
+        if (profile != null) {
+          profile.currencies.scrap -= scrapCost;
+          if (keyType == CurrencyType.basicKeys) profile.currencies.basicKeys += 1;
+          else if (keyType == CurrencyType.rareKeys) profile.currencies.rareKeys += 1;
+          else if (keyType == CurrencyType.epicKeys) profile.currencies.epicKeys += 1;
+          profile.economyVersion += 1;
+          await _isar.playerProfiles.put(profile);
+        }
+      });
+    }
+    return ok;
+  }
  
   Future<void> grantCogs(int amount) async {
     await _isar.writeTxn(() async {

@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
  
-enum CurrencyType { scrap, premiumGems }
+enum CurrencyType { scrap, premiumGems, basicKeys, rareKeys, epicKeys }
 enum DecorCategory { seating, screen, plant, lighting, storage, rug, wallArt }
  
 class DecorDef {

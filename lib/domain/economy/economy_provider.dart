@@ -69,61 +69,27 @@ class EconomyService {
     final price = kKeyPriceScrap[tier];
     if (price == null) return false;
 
-    final success = await isar.writeTxn(() async {
-      final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
-      if (profile == null || profile.currencies.scrap < price) return false;
-
-      profile.currencies.scrap -= price;
-
-      switch (tier) {
-        case KeyTier.basic:
-          profile.currencies.basicKeys += 1;
-          break;
-        case KeyTier.rare:
-          profile.currencies.rareKeys += 1;
-          break;
-        case KeyTier.epic:
-          profile.currencies.epicKeys += 1;
-          break;
-      }
-      
-      await isar.playerProfiles.put(profile);
-      return true;
-    });
-
-    if (success) {
-      // Sync the spent scrap to Firestore to prevent it from coming back
-      await syncService.spend(currency: CurrencyType.scrap, amount: price, reason: 'buy_key');
+    CurrencyType cType;
+    switch (tier) {
+      case KeyTier.basic: cType = CurrencyType.basicKeys; break;
+      case KeyTier.rare: cType = CurrencyType.rareKeys; break;
+      case KeyTier.epic: cType = CurrencyType.epicKeys; break;
     }
-    return success;
+
+    return await syncService.buyKeyWithScrap(cType, price);
   }
 
   Future<GameItem?> openCrate(KeyTier tier) async {
     if (sessionUid == null) return null;
     
-    // First, try to spend the key
-    final success = await isar.writeTxn(() async {
-      final profile = await isar.playerProfiles.filter().playerIdEqualTo(sessionUid!).findFirst();
-      if (profile == null) return false;
+    CurrencyType cType;
+    switch (tier) {
+      case KeyTier.basic: cType = CurrencyType.basicKeys; break;
+      case KeyTier.rare: cType = CurrencyType.rareKeys; break;
+      case KeyTier.epic: cType = CurrencyType.epicKeys; break;
+    }
 
-      switch (tier) {
-        case KeyTier.basic:
-          if (profile.currencies.basicKeys <= 0) return false;
-          profile.currencies.basicKeys -= 1;
-          break;
-        case KeyTier.rare:
-          if (profile.currencies.rareKeys <= 0) return false;
-          profile.currencies.rareKeys -= 1;
-          break;
-        case KeyTier.epic:
-          if (profile.currencies.epicKeys <= 0) return false;
-          profile.currencies.epicKeys -= 1;
-          break;
-      }
-      await isar.playerProfiles.put(profile);
-      return true;
-    });
-
+    final success = await syncService.spend(currency: cType, amount: 1, reason: 'open_crate');
     if (!success) return null;
 
     // We spent the key, now roll loot

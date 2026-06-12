@@ -8,7 +8,10 @@ class CloudProfileMapper {
     target.currencies
       ..scrap = _asInt(c['scrap'])
       ..rareCogs = _asInt(c['rareCogs'])
-      ..premiumGems = _asInt(c['premiumGems']);
+      ..premiumGems = _asInt(c['premiumGems'])
+      ..basicKeys = _asInt(c['basicKeys'])
+      ..rareKeys = _asInt(c['rareKeys'])
+      ..epicKeys = _asInt(c['epicKeys']);
     target.epicPityCounter = _asInt((data['pity'] as Map?)?['epicCounter']);
     target.economyVersion = _asInt(data['economyVersion']);
     target.displayName = (data['displayName'] as String?) ?? target.displayName;
@@ -26,7 +29,7 @@ class CloudProfileMapper {
         'displayName': 'Operator',
         'schemaVersion': 2,
         'economyVersion': 1,
-        'currencies': {'scrap': 0, 'rareCogs': 0, 'premiumGems': 0},
+        'currencies': {'scrap': 0, 'rareCogs': 0, 'premiumGems': 0, 'basicKeys': 1, 'rareKeys': 1, 'epicKeys': 1},
         'pity': {'epicCounter': 0},
         'activeRobotId': null,
         'combatLevel': 1,
