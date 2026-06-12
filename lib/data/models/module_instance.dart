@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
-import 'module_enums.dart';
-import 'module_def.dart';
+import 'game_item.dart';
  
 part 'module_instance.g.dart';
  
@@ -18,7 +17,7 @@ class ModuleInstance {
   late String defId;
  
   @Enumerated(EnumType.name)
-  ModuleRarity rarity = ModuleRarity.common;
+  Rarity rarity = Rarity.common;
  
   int level = 1;
  
@@ -33,5 +32,11 @@ class ModuleInstance {
   /// Convenience: resolve the static def. Returns null if defId is unknown
   /// (e.g. a newer server def the client hasn't shipped yet).
   @ignore
-  ModuleDef? get def => kModuleCatalog[defId];
+  GameItem? get def {
+    try {
+      return catalogById(defId);
+    } catch (e) {
+      return null;
+    }
+  }
 }

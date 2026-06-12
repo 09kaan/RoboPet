@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
  
 import '../app/providers.dart';
 import '../data/models/robot_instance.dart';
+import '../data/robot_repository.dart';
+import '../domain/economy/economy_provider.dart';
 import '../game/robot_game.dart';
+import 'shop_overlay.dart';
 import 'theme.dart';
  
 class PetScreen extends ConsumerWidget {
@@ -32,6 +35,30 @@ class _PetView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = ref.read(robotRepositoryProvider);
+    final eco = ref.read(economyProvider);
+    
+    void onCare(CareKind kind) async {
+      bool changed = false;
+      if (kind == CareKind.battery) changed = await repo.feed(robot.instanceId);
+      if (kind == CareKind.oil) changed = await repo.clean(robot.instanceId);
+      if (kind == CareKind.entertainment) changed = await repo.play(robot.instanceId);
+      
+      if (changed) {
+        int reward = 0;
+        if (kind == CareKind.battery) reward = 6;
+        if (kind == CareKind.oil) reward = 4;
+        if (kind == CareKind.entertainment) reward = 8;
+        eco.addScrap(reward);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('+$reward Scrap!'),
+            duration: const Duration(seconds: 1),
+            backgroundColor: AppColors.cyan.withOpacity(0.8),
+          ),
+        );
+      }
+    }
  
     return Stack(
       children: [
@@ -52,7 +79,7 @@ class _PetView extends ConsumerWidget {
                         label: 'Feed',
                         icon: Icons.bolt,
                         color: AppColors.green,
-                        onTap: () => repo.feed(robot.instanceId),
+                        onTap: () => onCare(CareKind.battery),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -61,7 +88,7 @@ class _PetView extends ConsumerWidget {
                         label: 'Oil',
                         icon: Icons.water_drop,
                         color: AppColors.amber,
-                        onTap: () => repo.clean(robot.instanceId),
+                        onTap: () => onCare(CareKind.oil),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -70,7 +97,21 @@ class _PetView extends ConsumerWidget {
                         label: 'Play',
                         icon: Icons.sports_esports,
                         color: AppColors.pink,
-                        onTap: () => repo.play(robot.instanceId),
+                        onTap: () => onCare(CareKind.entertainment),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _NeonButton(
+                        label: 'Shop',
+                        icon: Icons.store,
+                        color: AppColors.cyan,
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const ShopOverlay(),
+                          );
+                        },
                       ),
                     ),
                   ],

@@ -27,41 +27,51 @@ const PlayerProfileSchema = CollectionSchema(
       name: r'combatLevel',
       type: IsarType.long,
     ),
-    r'currencies': PropertySchema(
+    r'consumablesJson': PropertySchema(
       id: 2,
+      name: r'consumablesJson',
+      type: IsarType.string,
+    ),
+    r'currencies': PropertySchema(
+      id: 3,
       name: r'currencies',
       type: IsarType.object,
       target: r'Currencies',
     ),
     r'displayName': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'displayName',
       type: IsarType.string,
     ),
     r'economyVersion': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'economyVersion',
       type: IsarType.long,
     ),
     r'epicPityCounter': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'epicPityCounter',
       type: IsarType.long,
     ),
     r'ownedDecor': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'ownedDecor',
       type: IsarType.stringList,
     ),
     r'playerId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'playerId',
       type: IsarType.string,
     ),
     r'schemaVersion': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'schemaVersion',
       type: IsarType.long,
+    ),
+    r'starterGranted': PropertySchema(
+      id: 10,
+      name: r'starterGranted',
+      type: IsarType.bool,
     )
   },
   estimateSize: _playerProfileEstimateSize,
@@ -104,6 +114,7 @@ int _playerProfileEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.consumablesJson.length * 3;
   bytesCount += 3 +
       CurrenciesSchema.estimateSize(
           object.currencies, allOffsets[Currencies]!, allOffsets);
@@ -127,18 +138,20 @@ void _playerProfileSerialize(
 ) {
   writer.writeString(offsets[0], object.activeRobotId);
   writer.writeLong(offsets[1], object.combatLevel);
+  writer.writeString(offsets[2], object.consumablesJson);
   writer.writeObject<Currencies>(
-    offsets[2],
+    offsets[3],
     allOffsets,
     CurrenciesSchema.serialize,
     object.currencies,
   );
-  writer.writeString(offsets[3], object.displayName);
-  writer.writeLong(offsets[4], object.economyVersion);
-  writer.writeLong(offsets[5], object.epicPityCounter);
-  writer.writeStringList(offsets[6], object.ownedDecor);
-  writer.writeString(offsets[7], object.playerId);
-  writer.writeLong(offsets[8], object.schemaVersion);
+  writer.writeString(offsets[4], object.displayName);
+  writer.writeLong(offsets[5], object.economyVersion);
+  writer.writeLong(offsets[6], object.epicPityCounter);
+  writer.writeStringList(offsets[7], object.ownedDecor);
+  writer.writeString(offsets[8], object.playerId);
+  writer.writeLong(offsets[9], object.schemaVersion);
+  writer.writeBool(offsets[10], object.starterGranted);
 }
 
 PlayerProfile _playerProfileDeserialize(
@@ -150,19 +163,21 @@ PlayerProfile _playerProfileDeserialize(
   final object = PlayerProfile();
   object.activeRobotId = reader.readStringOrNull(offsets[0]);
   object.combatLevel = reader.readLong(offsets[1]);
+  object.consumablesJson = reader.readString(offsets[2]);
   object.currencies = reader.readObjectOrNull<Currencies>(
-        offsets[2],
+        offsets[3],
         CurrenciesSchema.deserialize,
         allOffsets,
       ) ??
       Currencies();
-  object.displayName = reader.readString(offsets[3]);
-  object.economyVersion = reader.readLong(offsets[4]);
-  object.epicPityCounter = reader.readLong(offsets[5]);
+  object.displayName = reader.readString(offsets[4]);
+  object.economyVersion = reader.readLong(offsets[5]);
+  object.epicPityCounter = reader.readLong(offsets[6]);
   object.id = id;
-  object.ownedDecor = reader.readStringList(offsets[6]) ?? [];
-  object.playerId = reader.readString(offsets[7]);
-  object.schemaVersion = reader.readLong(offsets[8]);
+  object.ownedDecor = reader.readStringList(offsets[7]) ?? [];
+  object.playerId = reader.readString(offsets[8]);
+  object.schemaVersion = reader.readLong(offsets[9]);
+  object.starterGranted = reader.readBool(offsets[10]);
   return object;
 }
 
@@ -178,24 +193,28 @@ P _playerProfileDeserializeProp<P>(
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
+      return (reader.readString(offset)) as P;
+    case 3:
       return (reader.readObjectOrNull<Currencies>(
             offset,
             CurrenciesSchema.deserialize,
             allOffsets,
           ) ??
           Currencies()) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
-      return (reader.readStringList(offset) ?? []) as P;
-    case 7:
-      return (reader.readString(offset)) as P;
-    case 8:
       return (reader.readLong(offset)) as P;
+    case 7:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
+      return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -603,6 +622,142 @@ extension PlayerProfileQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'consumablesJson',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'consumablesJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'consumablesJson',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'consumablesJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      consumablesJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'consumablesJson',
+        value: '',
       ));
     });
   }
@@ -1325,6 +1480,16 @@ extension PlayerProfileQueryFilter
       ));
     });
   }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterFilterCondition>
+      starterGrantedEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'starterGranted',
+        value: value,
+      ));
+    });
+  }
 }
 
 extension PlayerProfileQueryObject
@@ -1366,6 +1531,20 @@ extension PlayerProfileQuerySortBy
       sortByCombatLevelDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'combatLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      sortByConsumablesJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'consumablesJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      sortByConsumablesJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'consumablesJson', Sort.desc);
     });
   }
 
@@ -1436,6 +1615,20 @@ extension PlayerProfileQuerySortBy
       return query.addSortBy(r'schemaVersion', Sort.desc);
     });
   }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      sortByStarterGranted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'starterGranted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      sortByStarterGrantedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'starterGranted', Sort.desc);
+    });
+  }
 }
 
 extension PlayerProfileQuerySortThenBy
@@ -1464,6 +1657,20 @@ extension PlayerProfileQuerySortThenBy
       thenByCombatLevelDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'combatLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      thenByConsumablesJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'consumablesJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      thenByConsumablesJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'consumablesJson', Sort.desc);
     });
   }
 
@@ -1546,6 +1753,20 @@ extension PlayerProfileQuerySortThenBy
       return query.addSortBy(r'schemaVersion', Sort.desc);
     });
   }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      thenByStarterGranted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'starterGranted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QAfterSortBy>
+      thenByStarterGrantedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'starterGranted', Sort.desc);
+    });
+  }
 }
 
 extension PlayerProfileQueryWhereDistinct
@@ -1562,6 +1783,14 @@ extension PlayerProfileQueryWhereDistinct
       distinctByCombatLevel() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'combatLevel');
+    });
+  }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QDistinct>
+      distinctByConsumablesJson({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'consumablesJson',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -1605,6 +1834,13 @@ extension PlayerProfileQueryWhereDistinct
       return query.addDistinctBy(r'schemaVersion');
     });
   }
+
+  QueryBuilder<PlayerProfile, PlayerProfile, QDistinct>
+      distinctByStarterGranted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'starterGranted');
+    });
+  }
 }
 
 extension PlayerProfileQueryProperty
@@ -1625,6 +1861,13 @@ extension PlayerProfileQueryProperty
   QueryBuilder<PlayerProfile, int, QQueryOperations> combatLevelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'combatLevel');
+    });
+  }
+
+  QueryBuilder<PlayerProfile, String, QQueryOperations>
+      consumablesJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'consumablesJson');
     });
   }
 
@@ -1671,6 +1914,12 @@ extension PlayerProfileQueryProperty
       return query.addPropertyName(r'schemaVersion');
     });
   }
+
+  QueryBuilder<PlayerProfile, bool, QQueryOperations> starterGrantedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'starterGranted');
+    });
+  }
 }
 
 // **************************************************************************
@@ -1684,18 +1933,33 @@ const CurrenciesSchema = Schema(
   name: r'Currencies',
   id: 604863731747418347,
   properties: {
-    r'premiumGems': PropertySchema(
+    r'basicKeys': PropertySchema(
       id: 0,
+      name: r'basicKeys',
+      type: IsarType.long,
+    ),
+    r'epicKeys': PropertySchema(
+      id: 1,
+      name: r'epicKeys',
+      type: IsarType.long,
+    ),
+    r'premiumGems': PropertySchema(
+      id: 2,
       name: r'premiumGems',
       type: IsarType.long,
     ),
     r'rareCogs': PropertySchema(
-      id: 1,
+      id: 3,
       name: r'rareCogs',
       type: IsarType.long,
     ),
+    r'rareKeys': PropertySchema(
+      id: 4,
+      name: r'rareKeys',
+      type: IsarType.long,
+    ),
     r'scrap': PropertySchema(
-      id: 2,
+      id: 5,
       name: r'scrap',
       type: IsarType.long,
     )
@@ -1721,9 +1985,12 @@ void _currenciesSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.premiumGems);
-  writer.writeLong(offsets[1], object.rareCogs);
-  writer.writeLong(offsets[2], object.scrap);
+  writer.writeLong(offsets[0], object.basicKeys);
+  writer.writeLong(offsets[1], object.epicKeys);
+  writer.writeLong(offsets[2], object.premiumGems);
+  writer.writeLong(offsets[3], object.rareCogs);
+  writer.writeLong(offsets[4], object.rareKeys);
+  writer.writeLong(offsets[5], object.scrap);
 }
 
 Currencies _currenciesDeserialize(
@@ -1733,9 +2000,12 @@ Currencies _currenciesDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Currencies();
-  object.premiumGems = reader.readLong(offsets[0]);
-  object.rareCogs = reader.readLong(offsets[1]);
-  object.scrap = reader.readLong(offsets[2]);
+  object.basicKeys = reader.readLong(offsets[0]);
+  object.epicKeys = reader.readLong(offsets[1]);
+  object.premiumGems = reader.readLong(offsets[2]);
+  object.rareCogs = reader.readLong(offsets[3]);
+  object.rareKeys = reader.readLong(offsets[4]);
+  object.scrap = reader.readLong(offsets[5]);
   return object;
 }
 
@@ -1752,6 +2022,12 @@ P _currenciesDeserializeProp<P>(
       return (reader.readLong(offset)) as P;
     case 2:
       return (reader.readLong(offset)) as P;
+    case 3:
+      return (reader.readLong(offset)) as P;
+    case 4:
+      return (reader.readLong(offset)) as P;
+    case 5:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1759,6 +2035,114 @@ P _currenciesDeserializeProp<P>(
 
 extension CurrenciesQueryFilter
     on QueryBuilder<Currencies, Currencies, QFilterCondition> {
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> basicKeysEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'basicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition>
+      basicKeysGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'basicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> basicKeysLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'basicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> basicKeysBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'basicKeys',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> epicKeysEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'epicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition>
+      epicKeysGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'epicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> epicKeysLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'epicKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> epicKeysBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'epicKeys',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Currencies, Currencies, QAfterFilterCondition>
       premiumGemsEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
@@ -1861,6 +2245,60 @@ extension CurrenciesQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'rareCogs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> rareKeysEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rareKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition>
+      rareKeysGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rareKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> rareKeysLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rareKeys',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Currencies, Currencies, QAfterFilterCondition> rareKeysBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rareKeys',
         lower: lower,
         includeLower: includeLower,
         upper: upper,

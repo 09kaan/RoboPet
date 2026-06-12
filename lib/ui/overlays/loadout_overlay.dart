@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/providers.dart';
-import '../../../data/models/module_enums.dart';
+import '../../../data/models/game_item.dart';
 import '../../../data/models/module_instance.dart';
 import '../../../game/robot_game.dart';
 import '../theme.dart';

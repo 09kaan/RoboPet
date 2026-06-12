@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:isar/isar.dart';
  
 part 'player_profile.g.dart';
@@ -27,8 +28,28 @@ class PlayerProfile {
   int combatLevel = 1;
  
   List<String> ownedDecor = [];
+  
+  bool starterGranted = false;
+  
+  // JSON encoded map of consumable counts: {"use_repair_kit": 2}
+  String consumablesJson = '{}';
+  
+  @ignore
+  Map<String, int> get consumables {
+    if (consumablesJson.isEmpty || consumablesJson == '{}') return {};
+    try {
+      final map = jsonDecode(consumablesJson) as Map<String, dynamic>;
+      return map.map((k, v) => MapEntry(k, v as int));
+    } catch (_) {
+      return {};
+    }
+  }
+  
+  set consumables(Map<String, int> map) {
+    consumablesJson = jsonEncode(map);
+  }
  
-  int schemaVersion = 2;
+  int schemaVersion = 3; // bumped to 3
 }
  
 @embedded
@@ -36,4 +57,8 @@ class Currencies {
   int scrap = 0;        // soft currency (idle / care)
   int rareCogs = 0;     // earned premium (Sudoku) -> Epic pulls
   int premiumGems = 0;  // earned-only in v1 (no IAP)
+  
+  int basicKeys = 0;
+  int rareKeys = 0;
+  int epicKeys = 0;
 }

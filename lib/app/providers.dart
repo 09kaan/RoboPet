@@ -11,7 +11,7 @@ import '../data/sync/economy_sync_service.dart';
 import '../data/models/player_profile.dart';
 import '../data/models/robot_instance.dart';
 import '../data/models/module_instance.dart';
-import '../data/models/module_enums.dart';
+import '../data/models/game_item.dart';
 import '../data/robot_factory.dart';
 import '../data/robot_repository.dart';
 import '../domain/clock.dart';
@@ -19,7 +19,7 @@ import '../data/combat/combat_notifier.dart';
 import '../data/sync/combat_sync_service.dart';
 import '../data/decor/decor_repository.dart';
 import '../domain/combat/stat_resolver.dart';
-import '../domain/combat/resolved_stats.dart';
+import '../domain/economy/economy_provider.dart';
 
 /// Provided via override in main() (Phase 1).
 final isarProvider = Provider<Isar>((ref) => throw UnimplementedError());
@@ -144,6 +144,9 @@ final activeRobotIdProvider = FutureProvider<int?>((ref) async {
         await isar.playerProfiles.put(profile);
       }
     });
+    
+    // Also grant the economy starter pack (scrap, keys, starter core)
+    await ref.read(economyProvider).grantStarterPack();
   }
 
   // Compute offline progression at launch, return the active id.

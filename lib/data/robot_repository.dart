@@ -34,7 +34,8 @@ class RobotRepository {
  
   /// Settles elapsed decay, THEN adds [amount] to the chosen stat, so the
   /// boost always stacks on the correct (decayed) base value.
-  Future<RobotInstance?> applyCare(
+  /// Returns true if the stat actually increased (was not already maxed).
+  Future<bool> applyCare(
     String instanceId,
     CareKind kind, {
     double amount = 60,
@@ -43,7 +44,7 @@ class RobotRepository {
         .filter()
         .instanceIdEqualTo(instanceId)
         .findFirst();
-    if (robot == null) return null;
+    if (robot == null) return false;
  
     final result = _reconcileInPlace(robot); // advance time first
  
@@ -52,20 +53,24 @@ class RobotRepository {
       CareKind.oil => robot.oil,
       CareKind.entertainment => robot.entertainment,
     };
+    
+    final oldVal = stat.value;
     stat.value = (stat.value + amount).clamp(0.0, stat.max).toDouble();
+    final changed = stat.value > oldVal;
+    
     if (kind == CareKind.battery) robot.lastFedAt = _clock.now().toUtc();
  
     await _persist(robot, result);
-    return robot;
+    return changed;
   }
  
-  Future<RobotInstance?> feed(String id, {double amount = 60}) =>
+  Future<bool> feed(String id, {double amount = 60}) =>
       applyCare(id, CareKind.battery, amount: amount);
  
-  Future<RobotInstance?> clean(String id, {double amount = 60}) =>
+  Future<bool> clean(String id, {double amount = 60}) =>
       applyCare(id, CareKind.oil, amount: amount);
  
-  Future<RobotInstance?> play(String id, {double amount = 60}) =>
+  Future<bool> play(String id, {double amount = 60}) =>
       applyCare(id, CareKind.entertainment, amount: amount);
  
   // --- internals ---
