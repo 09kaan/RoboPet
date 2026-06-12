@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/combat/resolved_stats.dart';
-import '../../app/providers.dart';
-import '../models/module_enums.dart';
+import '../models/game_item.dart';
+import '../models/robot_instance.dart';
  
 enum CombatPhase { idle, battling, victory, defeat }
  

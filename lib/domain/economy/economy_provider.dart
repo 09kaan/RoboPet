@@ -6,11 +6,12 @@ import '../../app/providers.dart';
 import '../../data/models/game_item.dart';
 import '../../data/models/module_instance.dart';
 import '../../data/models/player_profile.dart';
+import '../../data/models/robot_instance.dart';
 
 final economyProvider = Provider<EconomyService>((ref) {
   return EconomyService(
     isar: ref.watch(isarProvider),
-    session: ref.watch(sessionProvider).valueOrNull?.uid,
+    sessionUid: ref.watch(sessionProvider).valueOrNull?.uid,
   );
 });
 

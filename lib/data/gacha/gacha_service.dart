@@ -1,17 +1,20 @@
 import 'package:cloud_functions/cloud_functions.dart';
-import '../models/module_enums.dart';
+import '../models/game_item.dart';
+import '../models/robot_instance.dart';
  
 class GachaResult {
   GachaResult({
     required this.instanceId,
     required this.defId,
     required this.rarity,
+    required this.slot,
     required this.forcedEpic,
     required this.pity,
   });
   final String instanceId;
   final String defId;
-  final ModuleRarity rarity;
+  final Rarity rarity;
+  final ModuleSlot slot;
   final bool forcedEpic;
   final int pity;
 }
@@ -37,8 +40,10 @@ class GachaService {
       return GachaResult(
         instanceId: d['instanceId'] as String,
         defId: d['defId'] as String,
-        rarity: ModuleRarity.values
+        rarity: Rarity.values
             .firstWhere((e) => e.name == d['rarity'] as String),
+        slot: ModuleSlot.values
+            .firstWhere((e) => e.name == d['slot'] as String),
         forcedEpic: d['forcedEpic'] as bool? ?? false,
         pity: (d['pity'] as num?)?.toInt() ?? 0,
       );

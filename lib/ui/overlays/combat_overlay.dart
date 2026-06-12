@@ -6,7 +6,7 @@ import '../../../app/providers.dart';
 import '../../../data/combat/combat_notifier.dart';
 import '../../../domain/combat/resolved_stats.dart';
 import '../../../game/robot_game.dart';
-import '../../../data/models/module_enums.dart';
+import '../../../data/models/game_item.dart';
 import '../theme.dart';
  
 class CombatOverlay extends ConsumerStatefulWidget {

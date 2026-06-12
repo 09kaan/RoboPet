@@ -1,5 +1,5 @@
 /// Final combat stats after module modifiers are applied.
-import '../../data/models/module_enums.dart';
+import '../../data/models/game_item.dart';
  
 class ResolvedCombatStats {
   const ResolvedCombatStats({

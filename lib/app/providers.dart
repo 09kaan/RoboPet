@@ -16,10 +16,11 @@ import '../data/robot_factory.dart';
 import '../data/robot_repository.dart';
 import '../domain/clock.dart';
 import '../data/combat/combat_notifier.dart';
-import '../data/sync/combat_sync_service.dart';
-import '../data/decor/decor_repository.dart';
+import '../domain/combat/resolved_stats.dart';
 import '../domain/combat/stat_resolver.dart';
 import '../domain/economy/economy_provider.dart';
+import '../data/sync/combat_sync_service.dart';
+import '../data/decor/decor_repository.dart';
 
 /// Provided via override in main() (Phase 1).
 final isarProvider = Provider<Isar>((ref) => throw UnimplementedError());

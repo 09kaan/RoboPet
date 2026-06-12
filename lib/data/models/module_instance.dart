@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'game_item.dart';
+import 'robot_instance.dart';
  
 part 'module_instance.g.dart';
  

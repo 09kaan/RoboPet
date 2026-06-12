@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
  
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:isar/isar.dart';
-import '../models/module_enums.dart';
+import '../models/game_item.dart';
 import '../models/module_instance.dart';
 import '../models/player_profile.dart';
 import '../models/robot_instance.dart';
@@ -233,6 +233,6 @@ class EconomySyncService {
     return DateTime.now().toUtc();
   }
  
-  static ModuleRarity _rarityFrom(String? name) => ModuleRarity.values
-      .firstWhere((e) => e.name == name, orElse: () => ModuleRarity.common);
+  static Rarity _rarityFrom(String? name) => Rarity.values
+      .firstWhere((e) => e.name == name, orElse: () => Rarity.common);
 }
