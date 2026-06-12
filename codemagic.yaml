@@ -22,32 +22,15 @@ workflows:
         script: |
           flutter build ios --release --no-codesign
           
-          cat <<EOF > custom_export_options.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>manageAppVersionAndBuildNumber</key>
-              <true/>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>uploadSymbols</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-          
           PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -n 1)
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin <<< $(security cms -D -i "$PROFILE_PATH"))
-          TEAM_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.team-identifier' /dev/stdin <<< $(security cms -D -i "$PROFILE_PATH"))
+          if [ -z "$PROFILE_PATH" ]; then
+            echo "FATAL ERROR: No provisioning profiles found!"
+            echo "Codemagic could not download the profile from Apple."
+            echo "Please check if your Apple Developer account has pending agreements to sign, or if com.kaan.robopet App ID is valid."
+            exit 1
+          fi
           
-          echo "Using Profile UUID: $PROFILE_UUID"
-          echo "Using Team ID: $TEAM_ID"
-          
-          xcodebuild archive -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -archivePath build/ios/xcarchive/Runner.xcarchive CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" DEVELOPMENT_TEAM="$TEAM_ID" COMPILER_INDEX_STORE_ENABLE=NO
-          xcodebuild -exportArchive -archivePath build/ios/xcarchive/Runner.xcarchive -exportPath build/ios/ipa -exportOptionsPlist custom_export_options.plist
+          xcode-project build-ipa --workspace "ios/Runner.xcworkspace" --scheme "Runner" --config "Release"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
