@@ -11,8 +11,9 @@ workflows:
     scripts:
       - name: Set up code signing settings on macOS builder
         script: |
+          set -e
           keychain initialize
-          app-store-connect fetch-signing-files "com.kaan.robopet" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "com.kaan.robopet" --type IOS_APP_STORE --create || { echo "Codemagic failed to fetch signing files from Apple! Look at the error above."; exit 1; }
           keychain add-certificates
           xcode-project use-profiles
       - name: Get Flutter packages
