@@ -5,6 +5,8 @@ workflows:
     integrations:
       app_store_connect: "Codemagic Key"
     environment:
+      groups:
+        - appstore_credentials
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -13,7 +15,10 @@ workflows:
         script: |
           set -e
           keychain initialize
-          app-store-connect fetch-signing-files "com.kaan.robopet" --type IOS_APP_STORE --create || { echo "Codemagic failed to fetch signing files from Apple! Look at the error above."; exit 1; }
+          app-store-connect fetch-signing-files "com.kaan.robopet" \
+            --type IOS_APP_STORE \
+            --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
+            --create || { echo "Codemagic failed to fetch signing files from Apple! Look at the error above."; exit 1; }
           keychain add-certificates
           xcode-project use-profiles
       - name: Get Flutter packages
