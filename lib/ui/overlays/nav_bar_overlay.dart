@@ -60,6 +60,13 @@ class _NavBarOverlayState extends State<NavBarOverlay> {
                       label: 'Fabricator', room: Room.fabricator, game: game),
                   _NavTab(icon: Icons.science,
                       label: 'Laboratory', room: Room.laboratory, game: game),
+                  _ActionTab(icon: Icons.store, label: 'Shop', onTap: () {
+                    if (game.overlays.isActive('ecoShop')) {
+                      game.overlays.remove('ecoShop');
+                    } else {
+                      game.overlays.add('ecoShop');
+                    }
+                  }),
                 ])))),
       ],
     );
@@ -89,5 +96,29 @@ class _NavTab extends StatelessWidget {
           Text(label, style: TextStyle(
               color: color, fontSize: 10, fontWeight: FontWeight.w600)),
         ]));
+  }
+}
+ 
+class _ActionTab extends StatelessWidget {
+  const _ActionTab({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+ 
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white60, size: 26),
+          const SizedBox(height: 3),
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.white60, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
   }
 }

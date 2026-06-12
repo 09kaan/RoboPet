@@ -6,8 +6,11 @@ import '../data/models/game_item.dart';
 import '../domain/economy/economy_provider.dart';
 import 'theme.dart';
 
+import '../../game/robot_game.dart';
+
 class ShopOverlay extends ConsumerWidget {
-  const ShopOverlay({super.key});
+  const ShopOverlay({super.key, this.game});
+  final RoboPetGame? game;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,9 +19,10 @@ class ShopOverlay extends ConsumerWidget {
 
     if (currencies == null) return const SizedBox();
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(16),
+    return Container(
+      color: Colors.black87,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(16),
       child: GlassPanel(
         padding: const EdgeInsets.all(24),
         borderColor: AppColors.cyan.withOpacity(0.5),
@@ -32,7 +36,13 @@ class ShopOverlay extends ConsumerWidget {
                 Text('SHOP & CRATES', style: Theme.of(context).textTheme.headlineSmall),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (game != null) {
+                      game!.overlays.remove('ecoShop');
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
                 ),
               ],
             ),

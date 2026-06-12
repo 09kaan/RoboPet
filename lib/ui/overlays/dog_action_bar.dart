@@ -12,6 +12,7 @@ class DogActionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final robotId = ref.watch(activeRobotStreamProvider).value?.instanceId;
     final repo = ref.read(robotRepositoryProvider);
+    final eco = ref.read(economySyncProvider);
     
     Widget btn(String icon, String label, VoidCallback onTap) =>
         GestureDetector(
@@ -34,26 +35,45 @@ class DogActionBar extends ConsumerWidget {
           border: Border.all(color: const Color(0xFF22E1FF)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          btn('🍔', 'Feed',   () { 
-            if (robotId != null) repo.clean(robotId); // Maps to Oil (Feed)
+          btn('🍔', 'Feed',   () async { 
+            if (robotId != null) {
+              final changed = await repo.clean(robotId); // Maps to Oil (Feed)
+              if (changed) { eco.grantScrap(4); _showScrap(context, 4); }
+            }
             game.combatWorld; // access getter just in case
             // The dog is in the LivingRoomWorld, we can just use the active world
             final world = game.world;
             if (world is LivingRoomWorld) world.dog?.reactEat();
           }),
           const SizedBox(width: 28),
-          btn('🖐️',  'Pet',    () { 
-            if (robotId != null) repo.play(robotId);  // Maps to Entertainment (Pet)
+          btn('🖐️',  'Pet',    () async { 
+            if (robotId != null) {
+              final changed = await repo.play(robotId);  // Maps to Entertainment (Pet)
+              if (changed) { eco.grantScrap(8); _showScrap(context, 8); }
+            }
             final world = game.world;
             if (world is LivingRoomWorld) world.dog?.reactHappy(); 
           }),
           const SizedBox(width: 28),
-          btn('🔋', 'Charge', () { 
-            if (robotId != null) repo.feed(robotId);  // Maps to Battery (Charge)
+          btn('🔋', 'Charge', () async { 
+            if (robotId != null) {
+              final changed = await repo.feed(robotId);  // Maps to Battery (Charge)
+              if (changed) { eco.grantScrap(6); _showScrap(context, 6); }
+            }
             final world = game.world;
             if (world is LivingRoomWorld) world.dog?.reactHappy(); 
           }),
         ]),
+      ),
+    );
+  }
+
+  void _showScrap(BuildContext context, int amount) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('+$amount Scrap!'),
+        duration: const Duration(seconds: 1),
+        backgroundColor: const Color(0xFF22E1FF).withOpacity(0.8),
       ),
     );
   }

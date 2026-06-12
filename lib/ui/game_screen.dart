@@ -10,6 +10,7 @@ import 'overlays/combat_overlay.dart';
 import 'overlays/decor_shop_overlay.dart';
 import 'overlays/dog_action_bar.dart';
 import 'overlays/care_hud.dart';
+import 'shop_overlay.dart' as eco_shop;
 import '../../app/providers.dart';
 import '../../game/rooms/living_room.dart';
  
@@ -72,6 +73,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               CombatOverlay(game: game as RoboPetGame),
           'shop': (ctx, game) =>
               ShopOverlay(game: game as RoboPetGame),
+          'ecoShop': (ctx, game) => eco_shop.ShopOverlay(game: game as RoboPetGame),
           'dogActions': (ctx, game) =>
               DogActionBar(game: game as RoboPetGame),
           'careHud': (ctx, game) => const CareHud(),
