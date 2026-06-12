@@ -22,15 +22,6 @@ workflows:
       - name: Build Flutter iOS app
         script: |
           flutter build ios --release --no-codesign
-          
-          PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -n 1)
-          if [ -z "$PROFILE_PATH" ]; then
-            echo "FATAL ERROR: No provisioning profiles found!"
-            echo "Codemagic could not download the profile from Apple."
-            echo "Please check if your Apple Developer account has pending agreements to sign, or if com.kaan.robopet App ID is valid."
-            exit 1
-          fi
-          
           xcode-project build-ipa --workspace "ios/Runner.xcworkspace" --scheme "Runner" --config "Release"
     artifacts:
       - build/ios/ipa/*.ipa
