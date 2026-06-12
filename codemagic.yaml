@@ -26,12 +26,7 @@ workflows:
           flutter packages pub get
       - name: Build Flutter iOS app
         script: |
-          # We don't run flutter build ios first because xcode-project build-ipa 
-          # triggers the Flutter build script internally. Doing both causes code signing conflicts for frameworks like grpc.
-          xcode-project build-ipa \
-            --workspace "ios/Runner.xcworkspace" \
-            --scheme "Runner" \
-            --config "Release"
+          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
