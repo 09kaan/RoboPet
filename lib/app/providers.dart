@@ -145,10 +145,10 @@ final activeRobotIdProvider = FutureProvider<int?>((ref) async {
         await isar.playerProfiles.put(profile);
       }
     });
-    
-    // Also grant the economy starter pack (scrap, keys, starter core)
-    await ref.read(economyProvider).grantStarterPack();
   }
+  
+  // Grant starter pack (safe to call on every launch, it checks starterGranted flag internally)
+  await ref.read(economyProvider).grantStarterPack();
 
   // Compute offline progression at launch, return the active id.
   final active = await repo.loadActiveAndReconcile();
